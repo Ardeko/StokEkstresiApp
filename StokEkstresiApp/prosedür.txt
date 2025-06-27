@@ -1,0 +1,43 @@
+USE [StokEkstresiTest]
+GO
+
+/****** Object:  StoredProcedure [dbo].[sp_StokEkstresi]    Script Date: 27.06.2025 04:54:57 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+ALTER PROCEDURE [dbo].[sp_StokEkstresi]
+    @MalKodu NVARCHAR(50),
+    @BaslangicTarihi DATETIME,
+    @BitisTarihi DATETIME
+AS
+BEGIN
+    -- Null parametre kontrolü
+    IF @MalKodu IS NULL OR @BaslangicTarihi IS NULL OR @BitisTarihi IS NULL
+    BEGIN
+        RAISERROR('Geçersiz parametreler.', 16, 1);
+        RETURN;
+    END
+
+    SELECT 
+        STI.ID,
+        STI.IslemTur,
+        STI.EvrakNo,
+        STI.Tarih,
+        STI.MalKodu,
+        ISNULL(STK.MalAdi, 'Bilinmiyor') AS UrunAdi,  -- Null değerler için ISNULL kullanımı
+        SUM(CASE WHEN STI.IslemTur = 0 THEN STI.Miktar ELSE 0 END) AS ToplamStok,
+        SUM(CASE WHEN STI.IslemTur = 1 THEN STI.Miktar ELSE 0 END) AS ToplamDeger
+    FROM 
+        STI
+    INNER JOIN 
+        STK ON STI.MalKodu = STK.MalKodu
+    WHERE 
+        STI.MalKodu = @MalKodu
+        AND STI.Tarih BETWEEN @BaslangicTarihi AND @BitisTarihi
+    GROUP BY 
+        STI.ID, STI.IslemTur, STI.EvrakNo, STI.Tarih, STI.MalKodu, STK.MalAdi
+    ORDER BY 
+        STI.Tarih;
+END

@@ -1,0 +1,70 @@
+﻿@using System.Data
+@model System.Data.DataTable
+
+@{
+    ViewData["Title"] = "Stok Ekstresi";
+}
+
+<div class="container my-5">
+    <h2 class="text-center mb-4">@ViewData["Title"]</h2>
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div class="alert alert-danger text-center">
+            @ViewBag.ErrorMessage
+        </div>
+    }
+
+    <form method="post" asp-action="GetStokEkstresi" class="card shadow p-4 mx-auto" style="max-width: 600px;">
+        <div class="mb-3">
+            <label for="malKodu" class="form-label">Mal Kodu</label>
+            <input type="text" id="malKodu" name="malKodu" class="form-control" required placeholder="Örn: 10087 SİEMENS" />
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="baslangic" class="form-label">Başlangıç Tarihi</label>
+                <input type="date" id="baslangic" name="baslangic" class="form-control" required />
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="bitis" class="form-label">Bitiş Tarihi</label>
+                <input type="date" id="bitis" name="bitis" class="form-control" required />
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mt-2">Filtrele</button>
+    </form>
+
+    @if (Model?.Rows.Count > 0)
+    {
+        <div class="table-responsive mt-5 shadow-sm">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th>Mal Kodu</th>
+                        <th>Ürün Adı</th>
+                        <th>Toplam Stok</th>
+                        <th>Toplam Değer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (DataRow row in Model.Rows)
+                    {
+                        <tr>
+                            <td>@(row["MalKodu"] ?? "-")</td>
+                            <td>@(row["UrunAdi"] ?? "-")</td>
+                            <td class="text-end">@String.Format("{0:N0}", row["ToplamStok"])</td>
+                            <td class="text-end">@String.Format("{0:N2}", row["ToplamDeger"])</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else if (ViewBag.ErrorMessage == null)
+    {
+        <div class="alert alert-info text-center mt-4">
+            Veritabanında belirtilen tarihler arasında stok verisi bulunmamaktadır.
+        </div>
+    }
+</div>
